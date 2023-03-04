@@ -11,7 +11,7 @@ Simply clone and access site, not setup required.
 
 Plugins slugs are saved to the address bar so can be saved as bookmarks for various configurations.
 
-##### Pre-selected plugins demo: https://dgte.pro/dev/wp-quick/#advanced-custom-fields;better-search-replace;duplicator;seo-by-rank-math
+##### Pre-selected plugins demo: https://dgte.pro/dev/wp-quick/#add-to-any;advanced-custom-fields;aryo-activity-log;better-search-replace;classic-editor;classic-widgets;contact-form-7;custom-css-js;disable-comments;disable-xml-rpc;duplicator;ewww-image-optimizer;font-awesome;imsanity;megamenu;regenerate-thumbnails;seo-by-rank-math;tiny-compress-images;webp-express;widget-importer-exporter;woocommerce;woocommerce-pdf-invoices-packing-slips;wordfence;wp-crontrol;wp-mail-smtp;wp-super-cache
 
 
 ### Note you should install this yourself, don't trust anyone to compile a WP installer zip file for you.
