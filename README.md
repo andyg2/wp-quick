@@ -4,7 +4,8 @@ This standalone PHP script is to help WordPress Developers in building a collect
 
 Simply clone and access site, not setup required.
 
-![ss1.png](https://raw.githubusercontent.com/andyg2/wp-quick/master/assets/ss1.png?token=GHSAT0AAAAAAB4JIX6SVF5COXNAH4WZ45AAZAB2ROA)
+![selector.png](https://raw.githubusercontent.com/andyg2/wp-quick/master/assets/selector.png)
+![zip.jpg](https://raw.githubusercontent.com/andyg2/wp-quick/master/assets/zip.jpg)
 
 #### [Regular Demo](https://dgte.pro/dev/wp-quick/)
 
@@ -17,3 +18,6 @@ Plugins slugs are saved to the address bar so can be saved as bookmarks for vari
 
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/dgtepro)
+
+
+
