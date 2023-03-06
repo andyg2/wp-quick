@@ -1,6 +1,6 @@
 <?php
-ini_set('memory_limit', '1024M');
 $version = '';
+ini_set('memory_limit', '1024M');
 define('ZIPS_DIR', 'zips/');
 define('CACHE_DIR', 'cache/');
 define('PLUGINS_DIR', 'plugins/');
@@ -22,9 +22,7 @@ if (!is_dir(PLUGINS_DIR)) {
   mkdir(PLUGINS_DIR, 0755, true);
 }
 
-
-$downloadToken = "downloadToken";
-$_GET[$downloadToken] = isset($_GET[$downloadToken]) ? $_GET[$downloadToken] : null;
+init_build();
 
 function wp_latest_zip_name() {
   global $version;
@@ -33,6 +31,13 @@ function wp_latest_zip_name() {
 
 
 // download_link, description, short_description, active_installs, ratings, version, name, slug
+
+
+/**
+ * It gets a list of all the plugin slugs from the WordPress.org API.
+ * 
+ * @return array An array of plugin slugs.
+ */
 function get_all_plugin_slugs() {
   $url = 'https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[per_page]=250';
   $response = wp_remote_get($url);
@@ -47,8 +52,12 @@ function get_all_plugin_slugs() {
   return $plugin_slugs;
 }
 
-
-
+/**
+ * It downloads the latest version of WordPress, unzips it, and returns the path to the unzipped
+ * folder.
+ * 
+ * @return string The path to the unzipped WordPress directory.
+ */
 function api_zip_get_latest_version() {
   global $version;
   if (!file_exists(WPDLHTML) || time() - filemtime(WPDLHTML) > CHECK_WP_VERSION_SECONDS) {
@@ -68,6 +77,10 @@ function api_zip_get_latest_version() {
   return ($build_path);
 }
 
+/**
+ * If the file doesn't exist or is older than a day, retrieve the contents of the WordPress download
+ * page and save it to a file. Otherwise, just touch the file to bust the cache for a day.
+ */
 function get_wp_dl_page_html() {
   // Retrieve the contents of the WordPress download page
   $html = file_get_contents('https://wordpress.org/download/');
@@ -79,6 +92,14 @@ function get_wp_dl_page_html() {
   }
 }
 
+/**
+ * It looks for a string that starts with `"softwareVersion":` and ends with `"` and returns the text
+ * in between.
+ * 
+ * @param string $html The HTML of the page you want to parse.
+ * 
+ * @return string The version number of the software.
+ */
 function parse_version($html) {
   $pattern = '/"softwareVersion":\s*"(.*?)"/';
   preg_match($pattern, $html, $matches);
@@ -89,6 +110,9 @@ function parse_version($html) {
   }
 }
 
+/**
+ * It downloads the latest WordPress ZIP package from wordpress.org and saves it to the zip directory.
+ */
 function download_latest_wordpress_zip() {
   // Set the URL of the latest WordPress ZIP package
   $url = 'https://wordpress.org/latest.zip';
@@ -96,6 +120,12 @@ function download_latest_wordpress_zip() {
   curl_save_zip($url, $filename);
 }
 
+/**
+ * Download a ZIP file from a URL and save it to a file.
+ * 
+ * @param string $url The URL of the ZIP file to download.
+ * @param string $filename The name of the file you want to save the ZIP package as.
+ */
 function curl_save_zip($url, $filename) {
   // Initialize cURL and set options
   $ch = curl_init($url);
@@ -112,6 +142,14 @@ function curl_save_zip($url, $filename) {
   curl_close($ch);
 }
 
+/**
+ * If the path is a directory, then open it, read each file, if it's a directory, then recursively call
+ * the function on it, otherwise delete the file, then close the directory and delete the directory.
+ * 
+ * @param string $dir_path The path to the directory you want to delete.
+ * 
+ * @return null nothing.
+ */
 function delete_directory($dir_path) {
   if (!is_dir($dir_path)) {
     return;
@@ -133,9 +171,15 @@ function delete_directory($dir_path) {
 }
 
 
+/**
+ * It unzips the latest version of WordPress into a temporary directory, and then optionally copies files into
+ * the mu-plugins directory.
+ * 
+ * @param string $path_to_zip The path to the zip file you want to unzip.
+ * 
+ * @return string The path to the unzipped file.
+ */
 function unzip_latest($path_to_zip) {
-
-
 
   // Open the ZIP file
   $build_path = BUILD_DIR . generate_seeded_unique_id(ip2long(get_client_ip())) . '/';
@@ -176,6 +220,13 @@ function unzip_latest($path_to_zip) {
 }
 
 
+/**
+ * If the supplied string is valid JSON, return the decoded array, otherwise return an empty array.
+ * 
+ * @param string $json The JSON string to be decoded.
+ * 
+ * @return array An array from the json.
+ */
 function json_decode_array($json) {
   // Attempt to convert supplies string into and array
   $json = json_decode($json, true);
@@ -183,22 +234,12 @@ function json_decode_array($json) {
   return (json_last_error() === JSON_ERROR_NONE ? (empty($json) ? array() : $json) : array());
 }
 
-function pre($a, $h = false) {
-  echo $h ? '<h3 style="margin-bottom: 0px;">' . $h . '</h3><pre style="margin-top: 0px;">' : '<pre style="margin-top: 0px;">';
-  print_r($a);
-  echo '</pre>';
-}
-
-function prex($a, $h = false, $dbg = false) {
-  pre($a, $h);
-  if ($dbg) {
-    echo '<pre>';
-    print_r(debug_backtrace());
-    echo '</pre>';
-  }
-  exit;
-}
-
+/**
+ * If the client is behind a proxy, the proxy's IP address is returned, otherwise the client's IP
+ * address is returned.
+ * 
+ * @return string The IP address of the user.
+ */
 function get_client_ip() {
   if (getenv('HTTP_CLIENT_IP'))
     $ipaddress = getenv('HTTP_CLIENT_IP');
@@ -217,6 +258,16 @@ function get_client_ip() {
   return $ipaddress;
 }
 
+/**
+ * It generates a random number between 0 and 9999999999, pads it with leading zeros to make it 10
+ * digits, and returns it as the ID.
+ * 
+ * @param mixed $seed The seed to use for the random number generator. If you don't specify a seed, the
+ * current time will be used.
+ * @param int $length The length of the ID you want to generate.
+ * 
+ * @return int A random number between 0000000000 and 9999999999.
+ */
 function generate_seeded_unique_id($seed = null, $length = 10) {
   if ($seed) {
     srand($seed);
@@ -229,50 +280,14 @@ function generate_seeded_unique_id($seed = null, $length = 10) {
   return $padded_number;
 }
 
-function get_all_plugins() {
-  return false;
-  $plugins = array();
-  $page = 1;
-  $total_pages = 1;
-
-  while ($page <= $total_pages) {
-    set_time_limit(120);
-    $url = 'https://api.wordpress.org/plugins/info/1.2/?action=query_plugins&request[per_page]=250&request[page]=' . $page;
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($ch);
-    curl_close($ch);
-    $response = json_decode($response, true);
-
-    foreach ($response['plugins'] as $plugin) {
-
-      $plugin_path = PLUGINS_DIR . $plugin['slug'][0] . '/' . $plugin['slug'][1] . '/' . $plugin['slug'] . '/' . $plugin['version'];
-      if (!is_dir($plugin_path)) {
-        mkdir($plugin_path, 0755, true);
-      }
-      file_put_contents($plugin_path . '/' . $plugin['version'] . '.json', json_encode($plugin));
-
-      $plugin_data = array(
-        'short_description' => $plugin['short_description'],
-        'active_installs' => $plugin['active_installs'],
-        'ratings' => $plugin['ratings'],
-        'version' => $plugin['version'],
-        'name' => $plugin['name'],
-        'slug' => $plugin['slug']
-      );
-      array_push($plugins, $plugin_data);
-      file_put_contents(CACHE_DIR . 'all_plugins.json', json_encode($plugins));
-    }
-
-    $page++;
-    $total_pages = $response['info']['pages'];
-  }
-
-  return $plugins;
-}
-
-
+/**
+ * It downloads a plugin from the wordpress.org plugin repository, extracts it, and returns the version
+ * number.
+ * 
+ * @param string $slug the plugin slug, e.g. "akismet"
+ * 
+ * @return string The version number of the plugin.
+ */
 function get_plugin($slug) {
 
   set_time_limit(120);
@@ -320,47 +335,65 @@ function get_plugin($slug) {
   } // each
 }
 
-$build_path = api_zip_get_latest_version();
-if ($build_path) {
-  if (isset($_GET['p'])) {
-    $plugins = array_map('trim', explode(';', $_GET['p']));
-    $slugs = [];
-    foreach ($plugins as $plugin) {
-      $v = get_plugin($plugin);
-      $plugin_slug = trim(rtrim(substr($plugin, 0, 20), '-'));
-      $slugs[] = $plugin_slug . '_' . $v;
-    }
-    sort($slugs);
-    $slugs = implode(',', $slugs);
+/**
+ * If the user has requested a build, and the build doesn't exist, create it, then serve it.
+ */
+function init_build() {
+  global $version;
 
-    if (strlen($slugs) >= 250) {
-      $built_filename = slugs_to_filemap($slugs); // zips/wp_6.1.1_7867687614.txt containing slugs
-      $dl_filename = substr('wp_' . $version . '_' . $slugs, 0, 250) . '.zip';
-    } else {
-      $built_filename = 'wp_' . $version . '_' . $slugs . '.zip';
-      $dl_filename = $built_filename;
-    }
+  $downloadToken = "downloadToken";
+  $_GET[$downloadToken] = isset($_GET[$downloadToken]) ? $_GET[$downloadToken] : null;
 
-    if (!file_exists(ZIPS_DIR . $built_filename)) {
-      create_zip($build_path, ZIPS_DIR . $built_filename);
-    }
 
-    if (file_exists(ZIPS_DIR . $built_filename)) {
-      if (isset($_GET[$downloadToken])) {
-        setCookieToken($downloadToken, $_GET[$downloadToken], false);
+  $build_path = api_zip_get_latest_version();
+  if ($build_path) {
+    if (isset($_GET['p'])) {
+      $plugins = array_map('trim', explode(';', $_GET['p']));
+      $slugs = [];
+      foreach ($plugins as $plugin) {
+        $v = get_plugin($plugin);
+        $plugin_slug = trim(rtrim(substr($plugin, 0, 20), '-'));
+        $slugs[] = $plugin_slug . '_' . $v;
       }
-      header("Content-Description: File Transfer");
-      header('Content-Disposition: attachment; filename="' . $dl_filename . '"');
-      header("Content-Type: application/zip");
-      header("Content-Transfer-Encoding: binary");
-      readfile(ZIPS_DIR . $built_filename);
-      // header('Location: ' . $built_filename);
-    } else {
-      echo 'Doh! - Sorry, something went wrong, try again later';
+      sort($slugs);
+      $slugs = implode(',', $slugs);
+
+      if (strlen($slugs) >= 250) {
+        $built_filename = slugs_to_filemap($slugs); // zips/wp_6.1.1_7867687614.txt containing slugs
+        $dl_filename = substr('wp_' . $version . '_' . $slugs, 0, 250) . '.zip';
+      } else {
+        $built_filename = 'wp_' . $version . '_' . $slugs . '.zip';
+        $dl_filename = $built_filename;
+      }
+
+      if (!file_exists(ZIPS_DIR . $built_filename)) {
+        create_zip($build_path, ZIPS_DIR . $built_filename);
+      }
+
+      if (file_exists(ZIPS_DIR . $built_filename)) {
+        if (isset($_GET[$downloadToken])) {
+          setCookieToken($downloadToken, $_GET[$downloadToken], false);
+        }
+        header("Content-Description: File Transfer");
+        header('Content-Disposition: attachment; filename="' . $dl_filename . '"');
+        header("Content-Type: application/zip");
+        header("Content-Transfer-Encoding: binary");
+        readfile(ZIPS_DIR . $built_filename);
+        // header('Location: ' . $built_filename);
+      } else {
+        echo 'Doh! - Sorry, something went wrong, try again later';
+      }
     }
   }
 }
 
+/**
+ * It takes an array of slugs, and returns a unique filename based on the slugs.
+ * 
+ * @param array $slugs An array of slugs to be used to generate the filemap.
+ * 
+ * @return string a string build from the slugs.
+ */
 function slugs_to_filemap($slugs) {
   return 'wordpress_' . generate_seeded_unique_id($slugs, 20) . '.zip';
 }
@@ -398,6 +431,15 @@ function create_zip($path_to_files, $zip_file_path) {
   return file_exists($zip_file_path);
 }
 
+/**
+ * @param string $cookieName  The name of the cookie.
+ * @param string $cookieValue The value of the cookie.
+ * @param bool $httpOnly      This is a security feature that prevents JavaScript from accessing the cookie. This
+ *                            is important because it prevents cross-site scripting (XSS) attacks.
+ * @param bool $secure        If this is set to TRUE, the cookie will only be set if a secure connection exists. On
+ *                            the server-side, it's on the programmer to send this kind of cookie only on secure connection (e.g.
+ *                            with respect to ["HTTPS"]).
+ */
 function setCookieToken($cookieName, $cookieValue, $httpOnly = true, $secure = false) {
   setcookie(
     $cookieName,
