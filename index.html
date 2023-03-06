@@ -121,6 +121,31 @@
       }
     }
 
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.2);
+      }
+
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    #permalink {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #permalink.clicked {
+      position: relative;
+      animation: pulse 0.5s;
+    }
+
   </style>
 </head>
 
@@ -133,18 +158,21 @@
       <div class="circle three"></div>
     </div>
     <h1 class="my-4">Plugin Selector</h1>
-    <h5 class="my-4">Compiles a wordpress.zip file with the selected plugins embedded</h5>
+    <h5 class="my-4">Compiles a wordpress.zip file with the selected plugins embedded<br>
+      <small>Optionally activates all plugins, and removes default plugins.</small>
+    </h5>
     <div id="plugin_selection" class="d-none">
-      <h4>Selected Plugins
-        <button id="compile_wp" type="button" class="btn btn-dark pull-right">Download Wordpress 6.1.1 with selected plugins</button>
-      </h4>
+      <h6>Experimental</h6>
       <label>
-        <input type="checkbox" id="activate_plugins" value="1"> Auto-activate plugins (experimental)
+        <input type="checkbox" id="activate_plugins" value="1"> Auto-activate plugins
       </label>
       <label>
-        <input type="checkbox" id="deactivate_plugins" value="1"> Remove Askiment and Hello Dolly (experimental)
+        <input type="checkbox" id="deactivate_plugins" value="1"> Remove Askiment and Hello Dolly
       </label>
+
+      <h4>Selected Plugins</h4>
       <div id="selected-plugins"></div>
+      <button id="compile_wp" type="button" class="btn btn-success pull-right">Download Wordpress 6.1.1 with selected plugins</button>
     </div>
     <form>
       <div class="mb-3">
@@ -153,8 +181,10 @@
       </div>
       <button type="submit" class="btn btn-primary">Search</button>
     </form>
-    <div class="mb-3">
-      <div id="permalink"></div>
+    <div class="m-3">
+      <div id="permalink_wrap">
+        <div id="permalink" class="mb-3" onclick="copyPermalink()" style="cursor: pointer;"></div>
+      </div>
       <div id="pluginList" class="mt-4"></div>
     </div>
 
@@ -397,6 +427,21 @@
         expireCookie("downloadToken");
         attempts = 60;
       }
+
+      function copyPermalink() {
+        const permalink = document.getElementById("permalink");
+        $(permalink).addClass("clicked");
+        const range = document.createRange();
+        range.selectNode(permalink);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand("copy");
+        window.getSelection().removeAllRanges();
+        setTimeout(function () {
+          $(permalink).removeClass("clicked");
+        }, 600);
+      }
+
 
     </script>
 </body>
