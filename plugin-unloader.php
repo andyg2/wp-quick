@@ -1,5 +1,5 @@
 <?php
-// Experimental - removes askimet and hello dolly
+// Experimental - this is included in the zip file if deactivate plugins is checked - askimet and hello dolly
 
 if (!is_plugin_active('akismet/akismet.php')) {
   uninstall_plugin('akismet/akismet.php');

@@ -1,5 +1,5 @@
 <?php
-// Experimental
+// Experimental - this is included in the zip file if activate plugins is checked
 
 // Activate all inactive plugins
 $plugins = get_plugins();
