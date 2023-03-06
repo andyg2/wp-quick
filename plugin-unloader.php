@@ -1,15 +1,12 @@
 <?php
-// Experimental - this is included in the zip file if deactivate plugins is checked - askimet and hello dolly
+// Experimental - this is included in the zip file if activate plugins is checked
 
-if (!is_plugin_active('akismet/akismet.php')) {
-  uninstall_plugin('akismet/akismet.php');
-}
-if (!is_plugin_active('hello.php')) {
-  uninstall_plugin('hello.php');
-}
+add_action('admin_init', function () {
+  if (!function_exists('get_plugins')) {
+    require_once ABSPATH . 'wp-admin/includes/plugin.php';
+  }
+  delete_plugins(['hello.php', 'akismet/akismet.php']);
 
-// Delete this file
-unlink(__FILE__);
-
-// Delete this directory
-rmdir(dirname(__FILE__));
+  // Delete this file
+  unlink(__FILE__);
+}, 1);
