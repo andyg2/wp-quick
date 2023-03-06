@@ -153,10 +153,21 @@ function unzip_latest($path_to_zip) {
     $zip->extractTo($build_path);
     $zip->close();
 
-    // copy a run once activator
-    if (isset($_GET['activate']) && file_exists('plugin-loader.php')) {
-      mkdir($build_path . 'wordpress/wp-content/mu-plugins', 0755, true);
-      copy('plugin-loader.php', $build_path . 'wordpress/wp-content/mu-plugins/plugin-loader.php');
+    if (isset($_GET['activate']) || isset($_GET['deactivate'])) {
+
+      // Create a mu-plugins directory
+      if (!is_dir($build_path . 'wordpress/wp-content/mu-plugins')) {
+        mkdir($build_path . 'wordpress/wp-content/mu-plugins', 0755, true);
+      }
+
+      // Copy a run once activator
+      if (isset($_GET['activate']) && file_exists('plugin-loader.php')) {
+        copy('plugin-loader.php', $build_path . 'wordpress/wp-content/mu-plugins/plugin-loader.php');
+      }
+      // Copy a run once deactivator
+      if (isset($_GET['deactivate']) && file_exists('plugin-unloader.php')) {
+        copy('plugin-unloader.php', $build_path . 'wordpress/wp-content/mu-plugins/plugin-unloader.php');
+      }
     }
     return $build_path;
   } else {

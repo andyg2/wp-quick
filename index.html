@@ -141,6 +141,9 @@
       <label>
         <input type="checkbox" id="activate_plugins" value="1"> Auto-activate plugins (experimental)
       </label>
+      <label>
+        <input type="checkbox" id="deactivate_plugins" value="1"> Remove Askiment and Hello Dolly (experimental)
+      </label>
       <div id="selected-plugins"></div>
     </div>
     <form>
@@ -182,8 +185,16 @@
         $("#loader").removeClass("d-none");
         $("#overlay").css("display", "block");
         var hash = window.location.hash.substr(1);
+        var args = [];
+        if ($("#deactivate_plugins").prop("checked")) {
+          args.push("deactivate");
+        }
         if ($("#activate_plugins").prop("checked")) {
-          window.location.href = "./build.php?downloadToken=" + downloadToken + "&activate=1&p=" + hash;
+          args.push("activate");
+        }
+
+        if (args.length) {
+          window.location.href = "./build.php?downloadToken=" + downloadToken + "&" + args.join("&") + "&p=" + hash;
         } else {
           window.location.href = "./build.php?downloadToken=" + downloadToken + "&p=" + hash;
         }
