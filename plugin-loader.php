@@ -1,5 +1,5 @@
 <?php
-// Experimental - this is included in the zip file if activate plugins is checked
+// This is included in the zip file if activate plugins is checked
 
 add_action('admin_init', function () {
   if (!function_exists('get_plugins')) {
