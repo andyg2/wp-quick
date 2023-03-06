@@ -134,10 +134,15 @@
     </div>
     <h1 class="my-4">Plugin Selector</h1>
     <h5 class="my-4">Compiles a wordpress.zip file with the selected plugins embedded</h5>
-    <h4>Selected Plugins
-      <button id="compile_wp" type="button" class="btn btn-dark pull-right d-none">Download Wordpress 6.1.1 with selected plugins</button>
-    </h4>
-    <div id="selected-plugins"></div>
+    <div id="plugin_selection" class="d-none">
+      <h4>Selected Plugins
+        <button id="compile_wp" type="button" class="btn btn-dark pull-right d-none">Download Wordpress 6.1.1 with selected plugins</button>
+      </h4>
+      <label>
+        <input type="checkbox" id="activate_plugins" value="1"> Auto-activate plugins (experimental)
+      </label>
+      <div id="selected-plugins"></div>
+    </div>
     <form>
       <div class="mb-3">
         <label for="searchInput" class="form-label">Search for Plugins:</label>
@@ -177,7 +182,11 @@
         $("#loader").removeClass("d-none");
         $("#overlay").css("display", "block");
         var hash = window.location.hash.substr(1);
-        window.location.href = "./build.php?downloadToken=" + downloadToken + "&p=" + hash;
+        if ($("#activate_plugins").prop("checked")) {
+          window.location.href = "./build.php?downloadToken=" + downloadToken + "&activate=1&p=" + hash;
+        } else {
+          window.location.href = "./build.php?downloadToken=" + downloadToken + "&p=" + hash;
+        }
       });
 
       function updateUrlHash() {
@@ -187,9 +196,9 @@
         window.location.hash = hash;
         $("#permalink").text(window.location);
         if (hash != "") {
-          $("#compile_wp").removeClass("d-none");
+          $("#plugin_selection").removeClass("d-none");
         } else {
-          $("#compile_wp").addClass("d-none");
+          $("#plugin_selection").addClass("d-none");
         }
       }
 

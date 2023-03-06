@@ -152,6 +152,12 @@ function unzip_latest($path_to_zip) {
   if ($res === true) {
     $zip->extractTo($build_path);
     $zip->close();
+
+    // copy a run once activator
+    if (isset($_GET['activate']) && file_exists('plugin-loader.php')) {
+      mkdir($build_path . 'wordpress/wp-content/mu-plugins', 0755, true);
+      copy('plugin-loader.php', $build_path . 'wordpress/wp-content/mu-plugins/plugin-loader.php');
+    }
     return $build_path;
   } else {
     return null;
